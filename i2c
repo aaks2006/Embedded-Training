@@ -1,0 +1,69 @@
+  master code:
+#include <Wire.h>
+
+#define ESP32_ADDRESS 0x08
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();  // Arduino UNO = Master
+
+  Serial.println("I2C MASTER READY");
+}
+
+void loop() {
+  Wire.beginTransmission(ESP32_ADDRESS);
+  Wire.write("Hello ESP32");
+
+  byte result = Wire.endTransmission();
+
+  if (result == 0) {
+    Serial.println("Data sent successfully");
+  } else {
+    Serial.print("I2C Error: ");
+    Serial.println(result);
+  }
+
+  delay(1000);
+}
+
+
+slave code:
+#include <Wire.h>
+
+#define SLAVE_ADDRESS 0x08
+#define SDA_PIN 21
+#define SCL_PIN 22
+
+void receiveEvent(int numBytes) {
+  Serial.print("Received: ");
+
+  while (Wire.available()) {
+    Serial.write(Wire.read());
+  }
+
+  Serial.println();
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Wire.onReceive(receiveEvent);
+
+  bool success = Wire.begin(
+    SLAVE_ADDRESS,
+    SDA_PIN,
+    SCL_PIN,
+    100000
+  );
+
+  if (success) {
+    Serial.println("I2C SLAVE READY");
+  } else {
+    Serial.println("I2C SLAVE FAILED");
+  }
+}
+
+void loop() {
+  delay(10);
+}
